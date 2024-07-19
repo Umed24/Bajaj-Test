@@ -1,0 +1,26 @@
+import pandas as pd
+import json
+
+# Load JSON data
+file_path = '/content/DataEngineeringQ2.json'
+with open(file_path) as f:
+    data = json.load(f)
+patient_details = [entry['patientDetails'] for entry in data if 'patientDetails' in entry]
+
+patient_details_df = pd.DataFrame(patient_details)
+
+def calculate_missing_percentage(column):
+    total_count = len(patient_details_df)
+    missing_count = patient_details_df[column].isna().sum() + (patient_details_df[column] == '').sum()
+    return (missing_count / total_count) * 100
+
+first_name_missing_pct = calculate_missing_percentage('firstName')
+last_name_missing_pct = calculate_missing_percentage('lastName')
+dob_missing_pct = calculate_missing_percentage('birthDate')
+
+first_name_missing_pct = round(first_name_missing_pct, 2)
+last_name_missing_pct = round(last_name_missing_pct, 2)
+dob_missing_pct = round(dob_missing_pct, 2)
+
+result = f"{first_name_missing_pct}, {last_name_missing_pct}, {dob_missing_pct}"
+result    
