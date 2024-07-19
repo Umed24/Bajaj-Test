@@ -24,3 +24,37 @@ dob_missing_pct = round(dob_missing_pct, 2)
 
 result = f"{first_name_missing_pct}, {last_name_missing_pct}, {dob_missing_pct}"
 result    
+
+
+gender_mode = patient_details_df['gender'].mode()[0]
+patient_details_df['gender'].fillna(gender_mode, inplace=True)
+patient_details_df['gender'].replace('', gender_mode, inplace=True)
+
+female_percentage = (patient_details_df['gender'].value_counts(normalize=True) * 100).get('Female', 0)
+female_percentage = round(female_percentage, 2)
+current_year = pd.to_datetime('now').year
+patient_details_df['birthDate'] = pd.to_datetime(patient_details_df['birthDate'], errors='coerce')
+patient_details_df['age'] = current_year - patient_details_df['birthDate'].dt.year
+def age_group(age):
+    if age <= 12:
+        return 'Child'
+    elif age <= 19:
+        return 'Teen'
+    elif age <= 59:
+        return 'Adult'
+    else:
+        return 'Senior'
+
+patient_details_df['ageGroup'] = patient_details_df['age'].apply(age_group)
+
+adult_count = patient_details_df['ageGroup'].value_counts().get('Adult', 0)
+medicines_data = [entry['consultationData']['medicines'] for entry in data if 'consultationData' in entry]
+medicines_flat_list = [medicine for sublist in medicines_data for medicine in sublist]
+medicines_df = pd.DataFrame(medicines_flat_list)
+average_medicines = round(medicines_df.groupby(medicines_df.index).size().mean(), 2)
+
+third_most_prescribed_medicine = medicines_df['medicineName'].value_counts().index[2]
+total_medicines = medicines_df['isActive'].value_counts(normalize=True) * 100
+active_percentage = round(total_medicines.get(True, 0), 2)
+inactive_percentage = round(total_medicines.get(False, 0), 2)
+female_percentage, adult_count, average_medicines, third_most_prescribed_medicine, active_percentage, inactive_percentage
