@@ -1,3 +1,5 @@
+Q 4-9
+
 import pandas as pd
 import json
 
@@ -58,3 +60,70 @@ total_medicines = medicines_df['isActive'].value_counts(normalize=True) * 100
 active_percentage = round(total_medicines.get(True, 0), 2)
 inactive_percentage = round(total_medicines.get(False, 0), 2)
 female_percentage, adult_count, average_medicines, third_most_prescribed_medicine, active_percentage, inactive_percentage
+
+
+
+Q10:
+import pandas as pd
+import json
+
+file_path = 'DataEngineeringQ2.json'
+with open(file_path, 'r') as file:
+    data = json.load(file)
+
+patient_records = []
+for record in data:
+    patient_detail = record.get('patientDetails', {})
+    phone_number = record.get('phoneNumber', None)
+    patient_detail['phoneNumber'] = phone_number
+    patient_records.append(patient_detail)
+
+df = pd.DataFrame(patient_records)
+
+def is_valid_indian_phone_number(phone_number):
+    if isinstance(phone_number, str):
+        if phone_number.startswith('+91'):
+            phone_number = phone_number[3:]
+        elif phone_number.startswith('91'):
+            phone_number = phone_number[2:]
+
+        # Check if the phone number has exactly 10 digits and starts with a valid digit
+        if phone_number.isdigit() and len(phone_number) == 10 and phone_number[0] in '6789':
+            return True
+    return False
+
+df['isValidMobile'] = df['phoneNumber'].apply(is_valid_indian_phone_number)
+
+valid_phone_count = df['isValidMobile'].sum()
+
+print(valid_phone_count)
+
+
+Q11: 
+
+import pandas as pd
+import json
+from datetime import datetime
+
+file_path = 'DataEngineeringQ2.json'
+with open(file_path, 'r') as file:
+    data = json.load(file)
+patient_records = []
+for record in data:
+    patient_detail = record.get('patientDetails', {})
+    consultation_data = record.get('consultationData', {})
+    patient_detail['medicines'] = consultation_data.get('medicines', [])
+    patient_records.append(patient_detail)
+
+df = pd.DataFrame(patient_records)
+
+current_year = datetime.now().year
+df['birthDate'] = pd.to_datetime(df['birthDate'], errors='coerce')
+df['age'] = current_year - df['birthDate'].dt.year
+
+df['numMedicines'] = df['medicines'].apply(len)
+
+correlation = df[['age', 'numMedicines']].corr(method='pearson').iloc[0, 1]
+
+correlation = round(correlation, 2)
+print(correlation)
